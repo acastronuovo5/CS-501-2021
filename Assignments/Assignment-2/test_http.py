@@ -4,10 +4,11 @@ import requests
 def make_request(fqdn, port, uri, use_tls):
     transport = "http" if use_tls == "0" else "https"
     url = f"{transport}://{fqdn}:{port}{uri}"
-    print(f"DEBUG: {url}")
+    print("URI IS: ", uri)
+    #print(f"DEBUG: {url}")
     r = requests.get(url )
     if r.status_code == 200:
-        print(r.text)
+        #print(r.text)
         return 
 
 
