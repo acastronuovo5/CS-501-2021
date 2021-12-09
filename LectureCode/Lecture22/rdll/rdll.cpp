@@ -14,7 +14,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
     case DLL_PROCESS_ATTACH:
         ::MessageBoxA(NULL,"Look Ma!", "No Disk!", MB_OK );
         ::OutputDebugStringW(L"DLL_PROCESS_ATTACH");
-        break;
+        break; 
 
     case DLL_THREAD_ATTACH:
         ::OutputDebugStringW(L"DLL_THREAD_ATTACH");

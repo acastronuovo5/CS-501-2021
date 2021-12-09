@@ -1,5 +1,6 @@
 #include "peloader.h"
 #include <windows.h>
+#include <intrin.h>
 
 // Modified https://github.com/stephenfewer/ReflectiveDLLInjection/blob/master/dll/src/ReflectiveLoader.c#L38
 // WIN_GET_CALLER gets the return address of the current function
@@ -376,7 +377,7 @@ void* FindBaseAddr(){
     return (void*)  baseAddr;
 }
 
-
+//NEVER CALLED
 void* GetProcAddressR(void* lpBaseAddr, char* funName){
 
 }
@@ -419,7 +420,6 @@ extern "C" __declspec(dllexport) UINT_PTR  WINAPI Loader( LPVOID lpParameter)
 
 
  
-
 /*
 void* ReflectiveLoader(UINT_PTR loadLibraryA, UINT_PTR getProcAddress ){
     _LoadLibraryA hLoadLibraryA =(_LoadLibraryA) loadLibraryA;

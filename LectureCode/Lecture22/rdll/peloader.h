@@ -44,4 +44,4 @@ typedef int (WINAPI* _MessageBoxA) (
   UINT   uType
 );
 
-void* ReflectiveLoader(UINT_PTR loadLibraryA, UINT_PTR getProcAddress );
+void* ReflectiveLoader(UINT_PTR loadLibraryA, UINT_PTR getProcAddress ); //Change to Loader ???

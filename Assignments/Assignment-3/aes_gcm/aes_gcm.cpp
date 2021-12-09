@@ -68,11 +68,165 @@ AESGCM::AESGCM( BYTE key[AES_256_KEY_SIZE]){
 
 
 void AESGCM::Decrypt(BYTE* nonce, size_t nonceLen, BYTE* data, size_t dataLen, BYTE* macTag, size_t macTagLen){
-    // change me
+    /*Struct Documentation
+    typedef struct _BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO {
+    ULONG     cbSize;
+    ULONG     dwInfoVersion;
+    PUCHAR    pbNonce;
+    ULONG     cbNonce;
+    PUCHAR    pbAuthData;
+    ULONG     cbAuthData;
+    PUCHAR    pbTag;
+    ULONG     cbTag;
+    PUCHAR    pbMacContext;
+    ULONG     cbMacContext;
+    ULONG     cbAAD;
+    ULONGLONG cbData;
+    ULONG     dwFlags;
+    } BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO, *PBCRYPT_AUTHENTICATED_CIPHER_MODE_INFO; */
+
+    //Create Struct
+    BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO padInfoStruct;
+    BCRYPT_INIT_AUTH_MODE_INFO(padInfoStruct);
+    //Set Vals
+    padInfoStruct.pbNonce = nonce;
+    padInfoStruct.cbNonce = nonceLen;
+    padInfoStruct.pbAuthData = NULL; //buffer of Authenticated data
+    padInfoStruct.cbAuthData = 0; //size of pbauthdata
+    padInfoStruct.pbTag = macTag; //for decrypt
+    padInfoStruct.cbTag = macTagLen; //for decrypt
+    padInfoStruct.pbMacContext = NULL; //assume not chaining for now
+    padInfoStruct.cbMacContext = 0; //assume not chaining for now
+
+    ULONG *bufferSize = 0;
+
+    //Output Buffer Size 
+    status = BCryptDecrypt(
+                                    hKey, 
+                                    data, 
+                                    dataLen, 
+                                    (PVOID) &padInfoStruct, //padInfo: BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO
+                                    nonce,
+                                    nonceLen,
+                                    NULL, 
+                                    0, 
+                                    bufferSize, 
+                                    BCRYPT_BLOCK_PADDING); 
+    if(!NT_SUCCESS(status))
+    {
+        wprintf(L"**** Error1 0x%x returned by BCryptDecrypt\n", status);
+        Cleanup();
+        return;
+    }
+
+    //Number of Bytes copied
+    DWORD cbResult = 0;
+    //Create Plaintext variable
+    PBYTE decryptedOutput = (PBYTE)HeapAlloc (GetProcessHeap (), 0, *bufferSize);
+    //Actually Decrypt
+    status =  BCryptDecrypt(
+                                    hKey, 
+                                    data, 
+                                    dataLen, 
+                                    (PVOID) &padInfoStruct, //padInfo: BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO
+                                    nonce,
+                                    nonceLen,
+                                    decryptedOutput, //(pbPlainText)
+                                    *bufferSize, //(&cbPlainText)
+                                    &cbResult, //number of bytes copied
+                                    BCRYPT_BLOCK_PADDING); 
+     if(!NT_SUCCESS(status))
+    {
+        wprintf(L"**** Error2 0x%x returned by BCryptDecrypt\n", status);
+        Cleanup();
+        return;
+    }
+
 }
 
 void AESGCM::Encrypt(BYTE* nonce, size_t nonceLen, BYTE* data, size_t dataLen){
-   // change me
+    /*Struct Documentation
+    typedef struct _BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO {
+    ULONG     cbSize;
+    ULONG     dwInfoVersion;
+    PUCHAR    pbNonce;
+    ULONG     cbNonce;
+    PUCHAR    pbAuthData;
+    ULONG     cbAuthData;
+    PUCHAR    pbTag;
+    ULONG     cbTag;
+    PUCHAR    pbMacContext;
+    ULONG     cbMacContext;
+    ULONG     cbAAD;
+    ULONGLONG cbData;
+    ULONG     dwFlags;
+    } BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO, *PBCRYPT_AUTHENTICATED_CIPHER_MODE_INFO; */
+
+    //Create Struct
+    BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO padInfoStruct;
+    BCRYPT_INIT_AUTH_MODE_INFO(padInfoStruct);
+    //Set Vals
+    padInfoStruct.pbNonce = nonce;
+    padInfoStruct.cbNonce = nonceLen;
+    padInfoStruct.pbAuthData = NULL; //buffer of Authenticated data
+    padInfoStruct.cbAuthData = 0; //size of pbauthdata
+    //padInfoStruct.pbTag = macTag; //for decrypt
+    //padInfoStruct.cbTag = macTagLen; //for decrypt
+    padInfoStruct.pbMacContext = NULL; //assume not chaining for now
+    padInfoStruct.cbMacContext = 0; //assume not chaining for now
+
+    ULONG *bufferSize = 0;
+
+    //Get Size of buffer
+    if(!NT_SUCCESS(status = BCryptEncrypt(
+                                        hKey, 
+                                        data, 
+                                        dataLen,
+                                        (PVOID) &padInfoStruct,
+                                        nonce,
+                                        nonceLen, 
+                                        NULL, 
+                                        0, 
+                                        bufferSize, //&cbCipherText
+                                        BCRYPT_BLOCK_PADDING)))
+    {
+        wprintf(L"**** Error1 0x%x returned by BCryptEncrypt\n", status);
+        wprintf(L"**** Buffer Size is %x \n", status);
+        Cleanup();
+        return;
+    }
+
+    //Create pbCipherText param
+    PBYTE encryptedOutput = (PBYTE)HeapAlloc (GetProcessHeap (), 0, *bufferSize);
+
+    //Create cbData
+    DWORD cbResult = 0; 
+    //Actually Encrypt now
+    if(!NT_SUCCESS(status = BCryptEncrypt(
+                                        hKey, 
+                                        data, 
+                                        dataLen,
+                                        (PVOID) &padInfoStruct, //padding info stuct
+                                        nonce,
+                                        nonceLen, 
+                                        encryptedOutput, 
+                                        *bufferSize, //size of output (cbCipherText from previous call)
+                                        &cbResult, //&cbData
+                                        BCRYPT_BLOCK_PADDING)))
+    {
+        wprintf(L"**** Error2 0x%x returned by BCryptEncrypt\n", status);
+        //wprintf(L"**** Buffer Size is %x \n", status);
+        Cleanup();
+        return;
+    }
+
+
+
+
+
+
+
+
 }
 
 void AESGCM::Cleanup(){

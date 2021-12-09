@@ -23,6 +23,7 @@ std::wstring makeHttpRequest(std::wstring fqdn, int port, std::wstring uri, bool
     if (hSession)
         hConnect = WinHttpConnect( hSession, fqdn.data(), port, 0);
 
+
     // Create an HTTP request handle.
     if (hConnect)
         hRequest = WinHttpOpenRequest( hConnect, L"GET", NULL,
@@ -43,7 +44,7 @@ std::wstring makeHttpRequest(std::wstring fqdn, int port, std::wstring uri, bool
         bResults = WinHttpReceiveResponse( hRequest, NULL);
 
     // Continue to verify data until there is nothing left.
-    char *charbuffer[4096];
+    wchar_t *charbuffer[4096];
     
     std::wstring result;
     if (bResults)
@@ -53,14 +54,14 @@ std::wstring makeHttpRequest(std::wstring fqdn, int port, std::wstring uri, bool
             // Verify available data.
             dwSize = 0;
             if (!WinHttpQueryDataAvailable( hRequest, &dwSize))
-                printf( "Error %u in WinHttpQueryDataAvailable.\n",
+                wprintf( L"Error %u in WinHttpQueryDataAvailable.\n",
                         GetLastError());
 
             // Allocate space for the buffer.
             pszOutBuffer = new wchar_t[dwSize+1];
             if (!pszOutBuffer)
             {
-                printf("Out of memory\n");
+                wprintf(L"Out of memory\n");
                 dwSize=0;
             }
             else
@@ -70,9 +71,9 @@ std::wstring makeHttpRequest(std::wstring fqdn, int port, std::wstring uri, bool
 
                 if (!WinHttpReadData( hRequest, (LPVOID)pszOutBuffer, 
                                       dwSize, &dwDownloaded))
-                    printf( "Error %u in WinHttpReadData.\n", GetLastError());
+                    wprintf( L"Error %u in WinHttpReadData.\n", GetLastError());
                 else
-                    printf( "%s\n", pszOutBuffer);
+                    wprintf( L"%s\n", pszOutBuffer);
                     result.append(pszOutBuffer);
             
                 // Free the memory allocated to the buffer.
@@ -84,7 +85,7 @@ std::wstring makeHttpRequest(std::wstring fqdn, int port, std::wstring uri, bool
 
     // Report any errors.
     if (!bResults)
-        printf( "Error %d has occurred.\n", GetLastError());
+        wprintf( L"Error %d has occurred.\n", GetLastError());
 
     // Close open handles.
     if (hRequest) WinHttpCloseHandle(hRequest);

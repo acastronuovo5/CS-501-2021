@@ -19,7 +19,7 @@ void f(){
     while(true){
     PIMAGE_DOS_HEADER Y = (PIMAGE_DOS_HEADER) x;
     if( Y->e_magic == IMAGE_DOS_SIGNATURE){
-        //
+        //IMPLEMENT !!
     }
     x--;
     }
